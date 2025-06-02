@@ -1,55 +1,82 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kalkulator Matriks</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Matriks</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Kalkulator Matriks</h1>
-
-    <div class="controls">
-      <div>
-        <label>Baris Matriks A:</label>
-        <input type="number" id="rowsA" min="1" value="2" placeholder="Baris Matriks A" title="Masukkan jumlah baris untuk Matriks A">
-        <label>Kolom Matriks A:</label>
-        <input type="number" id="colsA" min="1" value="2" placeholder="Kolom Matriks A" title="Masukkan jumlah kolom untuk Matriks A">
-      </div>
-      <div>
-        <label>Baris Matriks B:</label>
-        <input type="number" id="rowsB" min="1" value="2" placeholder="Baris Matriks B" title="Masukkan jumlah baris untuk Matriks B">
-        <label>Kolom Matriks B:</label>
-        <input type="number" id="colsB" min="1" value="2" placeholder="Kolom Matriks B">
-      </div>
-      <button onclick="generateMatrix()">Generate Matriks</button>
-      <button onclick="resetAll()" class="reset">Reset</button>
+    <div class="theme-toggle" onclick="toggleTheme()">
+        <span id="theme-icon">Mode Gelap</span>
     </div>
 
-    <div id="matrices">
-      <div id="matrixA"></div>
-      <div id="matrixB"></div>
+    <div class="container">
+        <div class="header">
+            <h1>Kalkulator Matriks</h1>
+            <p>Kalkulator matriks lengkap dengan berbagai operasi matematika</p>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <h2>Matriks A</h2>
+                <div class="matrix-controls">
+                    <div class="size-control">
+                        <label>Ukuran:</label>
+                        <input type="number" id="rowsA" class="size-input" value="2" min="1" max="5" onchange="createMatrix('A')">
+                        <span>×</span>
+                        <input type="number" id="colsA" class="size-input" value="2" min="1" max="5" onchange="createMatrix('A')">
+                    </div>
+                    <div class="operation-controls">
+                        <button class="btn btn-secondary" onclick="fillRandom('A')">Isi Acak</button>
+                        <button class="btn btn-secondary" onclick="fillIdentity('A')">Matriks Identitas</button>
+                        <button class="btn btn-danger" onclick="clearMatrix('A')">Bersihkan</button>
+                    </div>
+                </div>
+                <div id="matrixA" class="matrix-container"></div>
+            </div>
+
+            <div class="card">
+                <h2>Matriks B</h2>
+                <div class="matrix-controls">
+                    <div class="size-control">
+                        <label>Ukuran:</label>
+                        <input type="number" id="rowsB" class="size-input" value="2" min="1" max="5" onchange="createMatrix('B')">
+                        <span>×</span>
+                        <input type="number" id="colsB" class="size-input" value="2" min="1" max="5" onchange="createMatrix('B')">
+                    </div>
+                    <div class="operation-controls">
+                        <button class="btn btn-secondary" onclick="fillRandom('B')">Isi Acak</button>
+                        <button class="btn btn-secondary" onclick="fillIdentity('B')">Matriks Identitas</button>
+                        <button class="btn btn-danger" onclick="clearMatrix('B')">Bersihkan</button>
+                    </div>
+                </div>
+                <div id="matrixB" class="matrix-container"></div>
+            </div>
+
+            <div class="card result-card">
+                <h2>Operasi Matriks</h2>
+                <div class="operation-controls">
+                    <button class="btn" onclick="performOperation('add')">A + B</button>
+                    <button class="btn" onclick="performOperation('subtract')">A - B</button>
+                    <button class="btn" onclick="performOperation('multiply')">A × B</button>
+                    <button class="btn" onclick="performOperation('transposeA')">Transpose A</button>
+                    <button class="btn" onclick="performOperation('transposeB')">Transpose B</button>
+                    <button class="btn" onclick="performOperation('determinantA')">Determinan A</button>
+                    <button class="btn" onclick="performOperation('determinantB')">Determinan B</button>
+                    <button class="btn" onclick="performOperation('inverseA')">Invers A</button>
+                    <button class="btn" onclick="performOperation('inverseB')">Invers B</button>
+                    <button class="btn btn-secondary" onclick="performOperation('power')">Pangkat A</button>
+                </div>
+                <div class="result-display" id="result">
+                    <div class="success">
+                        Selamat datang! Pilih operasi matriks yang ingin Anda hitung.
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="operations">
-      <button onclick="addMatrices()">A + B</button>
-      <button onclick="subtractMatrices()">A - B</button>
-      <button onclick="multiplyMatrices()">A × B</button>
-      <button onclick="scalarMultiplyMatrix('A')">k × A</button>
-      <button onclick="scalarMultiplyMatrix('B')">k × B</button>
-      <button onclick="transposeMatrix('A')">Transpose A</button>
-      <button onclick="transposeMatrix('B')">Transpose B</button>
-      <button onclick="determinantMatrix('A')">Determinan A</button>
-      <button onclick="determinantMatrix('B')">Determinan B</button>
-      <button onclick="inverseMatrix('A')">Invers A</button>
-      <button onclick="inverseMatrix('B')">Invers B</button>
-    </div>
-
-    <div id="result"></div>
-
-  </div>
-
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
