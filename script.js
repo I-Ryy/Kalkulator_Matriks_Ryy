@@ -1,33 +1,36 @@
 // Global variables
-let currentTheme = 'light';
+let theme = 'light';
 
-// Theme toggle functionality
+// Theme functionality
 function toggleTheme() {
-    currentTheme = currentTheme === 'light' ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', currentTheme);
-    document.getElementById('theme-icon').textContent = currentTheme === 'light' ? 'Mode Gelap' : 'Mode Terang';
+    theme = theme === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.querySelector('.theme-toggle').textContent = theme === 'light' ? '🌙' : '☀️';
 }
 
-// Matrix creation and manipulation functions
+// Matrix creation and management
 function createMatrix(matrixName) {
     const rows = parseInt(document.getElementById(`rows${matrixName}`).value);
     const cols = parseInt(document.getElementById(`cols${matrixName}`).value);
     const container = document.getElementById(`matrix${matrixName}`);
     
     container.innerHTML = '';
-    container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
     
     for (let i = 0; i < rows; i++) {
+        const row = document.createElement('div');
+        row.className = 'matrix-row';
+        
         for (let j = 0; j < cols; j++) {
             const input = document.createElement('input');
             input.type = 'number';
-            input.className = 'matrix-input';
+            input.className = 'matrix-cell';
             input.id = `${matrixName}_${i}_${j}`;
             input.value = '0';
-            input.step = '0.01';
-            input.placeholder = `${i+1},${j+1}`;
-            container.appendChild(input);
+            input.step = '0.1';
+            row.appendChild(input);
         }
+        
+        container.appendChild(row);
     }
 }
 
@@ -44,83 +47,33 @@ function getMatrix(matrixName) {
         }
         matrix.push(row);
     }
+    
     return matrix;
 }
 
-function fillRandom(matrixName) {
-    const rows = parseInt(document.getElementById(`rows${matrixName}`).value);
-    const cols = parseInt(document.getElementById(`cols${matrixName}`).value);
-    
-    for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < cols; j++) {
-            const randomValue = Math.floor(Math.random() * 20) - 10;
-            document.getElementById(`${matrixName}_${i}_${j}`).value = randomValue;
-        }
-    }
-    
-    // Add animation effect
-    const container = document.getElementById(`matrix${matrixName}`);
-    container.classList.add('fade-in');
-    setTimeout(() => container.classList.remove('fade-in'), 500);
-}
-
-function fillIdentity(matrixName) {
-    const rows = parseInt(document.getElementById(`rows${matrixName}`).value);
-    const cols = parseInt(document.getElementById(`cols${matrixName}`).value);
-    
-    for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < cols; j++) {
-            document.getElementById(`${matrixName}_${i}_${j}`).value = (i === j) ? 1 : 0;
-        }
-    }
-    
-    // Add animation effect
-    const container = document.getElementById(`matrix${matrixName}`);
-    container.classList.add('pulse');
-    setTimeout(() => container.classList.remove('pulse'), 1000);
-}
-
-function clearMatrix(matrixName) {
-    const rows = parseInt(document.getElementById(`rows${matrixName}`).value);
-    const cols = parseInt(document.getElementById(`cols${matrixName}`).value);
-    
-    for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < cols; j++) {
-            document.getElementById(`${matrixName}_${i}_${j}`).value = '0';
-        }
-    }
-}
-
-// Matrix display function
 function displayMatrix(matrix, title = '') {
-    let html = '<div class="matrix-display">';
-    if (title) html += `<h3>${title}</h3>`;
-    
-    html += '<div style="display: flex; align-items: center; justify-content: center;">';
-    html += '<span class="matrix-bracket">[</span>';
-    html += '<table>';
+    let html = title ? `<strong>${title}</strong>\n` : '';
+    html += '<div class="matrix-display"><table>';
     
     for (let i = 0; i < matrix.length; i++) {
         html += '<tr>';
         for (let j = 0; j < matrix[i].length; j++) {
-            const value = Number(matrix[i][j]);
-            const displayValue = Math.abs(value) < 1e-10 ? '0.00' : value.toFixed(2);
-            html += `<td>${displayValue}</td>`;
+            const value = typeof matrix[i][j] === 'number' ? 
+                (matrix[i][j] % 1 === 0 ? matrix[i][j] : matrix[i][j].toFixed(3)) : 
+                matrix[i][j];
+            html += `<td>${value}</td>`;
         }
         html += '</tr>';
     }
     
-    html += '</table>';
-    html += '<span class="matrix-bracket">]</span>';
-    html += '</div></div>';
-    
+    html += '</table></div>';
     return html;
 }
 
-// Matrix operation functions
+// Matrix operations
 function addMatrices(a, b) {
     if (a.length !== b.length || a[0].length !== b[0].length) {
-        throw new Error('Matriks harus memiliki ukuran yang sama untuk penjumlahan');
+        throw new Error('Matriks harus memiliki dimensi yang sama untuk penjumlahan');
     }
     
     const result = [];
@@ -136,7 +89,7 @@ function addMatrices(a, b) {
 
 function subtractMatrices(a, b) {
     if (a.length !== b.length || a[0].length !== b[0].length) {
-        throw new Error('Matriks harus memiliki ukuran yang sama untuk pengurangan');
+        throw new Error('Matriks harus memiliki dimensi yang sama untuk pengurangan');
     }
     
     const result = [];
@@ -170,7 +123,7 @@ function multiplyMatrices(a, b) {
     return result;
 }
 
-function transposeMatrix(matrix) {
+function transpose(matrix) {
     const result = [];
     for (let j = 0; j < matrix[0].length; j++) {
         const row = [];
@@ -185,7 +138,7 @@ function transposeMatrix(matrix) {
 function determinant(matrix) {
     const n = matrix.length;
     if (n !== matrix[0].length) {
-        throw new Error('Determinan hanya dapat dihitung untuk matriks persegi');
+        throw new Error('Matriks harus persegi untuk menghitung determinan');
     }
     
     if (n === 1) return matrix[0][0];
@@ -193,39 +146,31 @@ function determinant(matrix) {
     
     let det = 0;
     for (let j = 0; j < n; j++) {
-        const minor = getMinor(matrix, 0, j);
+        const minor = [];
+        for (let i = 1; i < n; i++) {
+            const row = [];
+            for (let k = 0; k < n; k++) {
+                if (k !== j) row.push(matrix[i][k]);
+            }
+            minor.push(row);
+        }
         det += Math.pow(-1, j) * matrix[0][j] * determinant(minor);
     }
     return det;
 }
 
-function getMinor(matrix, row, col) {
-    const minor = [];
-    for (let i = 0; i < matrix.length; i++) {
-        if (i === row) continue;
-        const minorRow = [];
-        for (let j = 0; j < matrix[i].length; j++) {
-            if (j === col) continue;
-            minorRow.push(matrix[i][j]);
-        }
-        minor.push(minorRow);
-    }
-    return minor;
-}
-
-function inverseMatrix(matrix) {
+function inverse(matrix) {
     const n = matrix.length;
     if (n !== matrix[0].length) {
-        throw new Error('Invers hanya dapat dihitung untuk matriks persegi');
+        throw new Error('Matriks harus persegi untuk menghitung invers');
     }
     
     const det = determinant(matrix);
     if (Math.abs(det) < 1e-10) {
-        throw new Error('Matriks singular, tidak memiliki invers (determinan = 0)');
+        throw new Error('Matriks singular (determinan = 0), tidak memiliki invers');
     }
     
     if (n === 1) return [[1 / matrix[0][0]]];
-    
     if (n === 2) {
         return [
             [matrix[1][1] / det, -matrix[0][1] / det],
@@ -233,104 +178,166 @@ function inverseMatrix(matrix) {
         ];
     }
     
-    const adj = adjugateMatrix(matrix);
-    const result = [];
-    for (let i = 0; i < n; i++) {
-        const row = [];
-        for (let j = 0; j < n; j++) {
-            row.push(adj[i][j] / det);
-        }
-        result.push(row);
-    }
-    return result;
+    // Untuk matriks yang lebih besar, gunakan metode adjugate
+    const adj = adjugate(matrix);
+    return adj.map(row => row.map(val => val / det));
 }
 
-function adjugateMatrix(matrix) {
+function adjugate(matrix) {
     const n = matrix.length;
     const adj = [];
     
     for (let i = 0; i < n; i++) {
         const row = [];
         for (let j = 0; j < n; j++) {
-            const minor = getMinor(matrix, i, j);
-            const cofactor = Math.pow(-1, i + j) * determinant(minor);
-            row.push(cofactor);
+            const minor = [];
+            for (let x = 0; x < n; x++) {
+                if (x !== i) {
+                    const minorRow = [];
+                    for (let y = 0; y < n; y++) {
+                        if (y !== j) minorRow.push(matrix[x][y]);
+                    }
+                    minor.push(minorRow);
+                }
+            }
+            row.push(Math.pow(-1, i + j) * determinant(minor));
         }
         adj.push(row);
     }
     
-    return transposeMatrix(adj);
+    return transpose(adj);
 }
 
-function matrixPower(matrix, power) {
-    if (matrix.length !== matrix[0].length) {
-        throw new Error('Pangkat matriks hanya dapat dihitung untuk matriks persegi');
-    }
-    
-    if (power < 0) {
-        throw new Error('Pangkat negatif tidak didukung');
-    }
-    
-    if (power === 0) {
-        const n = matrix.length;
-        const identity = [];
-        for (let i = 0; i < n; i++) {
-            const row = [];
-            for (let j = 0; j < n; j++) {
-                row.push(i === j ? 1 : 0);
-            }
-            identity.push(row);
-        }
-        return identity;
-    }
-    
-    if (power === 1) return matrix;
-    
-    let result = matrix;
-    for (let i = 1; i < power; i++) {
-        result = multiplyMatrices(result, matrix);
-    }
-    return result;
-}
-
-// Main operation handler
-function performOperation(operation) {
+// Main calculation function
+function calculate(operation) {
     const resultDiv = document.getElementById('result');
     
-    // Show loading
-    resultDiv.innerHTML = '<div class="loading"></div><p>Menghitung...</p>';
+    try {
+        const matrixA = getMatrix('A');
+        const matrixB = getMatrix('B');
+        let result;
+        let resultText = '';
+        
+        switch (operation) {
+            case 'add':
+                result = addMatrices(matrixA, matrixB);
+                resultText = displayMatrix(result, 'A + B =');
+                break;
+            case 'subtract':
+                result = subtractMatrices(matrixA, matrixB);
+                resultText = displayMatrix(result, 'A - B =');
+                break;
+            case 'multiply':
+                result = multiplyMatrices(matrixA, matrixB);
+                resultText = displayMatrix(result, 'A × B =');
+                break;
+            case 'detA':
+                result = determinant(matrixA);
+                resultText = `<strong>Determinan A = ${result}</strong>`;
+                break;
+            case 'detB':
+                result = determinant(matrixB);
+                resultText = `<strong>Determinan B = ${result}</strong>`;
+                break;
+            case 'transposeA':
+                result = transpose(matrixA);
+                resultText = displayMatrix(result, 'A<sup>T</sup> =');
+                break;
+            case 'transposeB':
+                result = transpose(matrixB);
+                resultText = displayMatrix(result, 'B<sup>T</sup> =');
+                break;
+            case 'inverseA':
+                result = inverse(matrixA);
+                resultText = displayMatrix(result, 'A<sup>-1</sup> =');
+                break;
+            case 'inverseB':
+                result = inverse(matrixB);
+                resultText = displayMatrix(result, 'B<sup>-1</sup> =');
+                break;
+        }
+        
+        resultDiv.innerHTML = resultText;
+        resultDiv.classList.add('fade-in');
+        
+        // Remove animation class after animation completes
+        setTimeout(() => {
+            resultDiv.classList.remove('fade-in');
+        }, 500);
+        
+    } catch (error) {
+        resultDiv.innerHTML = `<div class="error">${error.message}</div>`;
+    }
+}
+
+// Utility functions
+function fillRandom(matrixName) {
+    const rows = parseInt(document.getElementById(`rows${matrixName}`).value);
+    const cols = parseInt(document.getElementById(`cols${matrixName}`).value);
     
-    setTimeout(() => {
-        try {
-            const matrixA = getMatrix('A');
-            const matrixB = getMatrix('B');
-            let result, title;
-            
-            switch (operation) {
-                case 'add':
-                    result = addMatrices(matrixA, matrixB);
-                    title = 'A + B =';
-                    break;
-                case 'subtract':
-                    result = subtractMatrices(matrixA, matrixB);
-                    title = 'A - B =';
-                    break;
-                case 'multiply':
-                    result = multiplyMatrices(matrixA, matrixB);
-                    title = 'A × B =';
-                    break;
-                case 'transposeA':
-                    result = transposeMatrix(matrixA);
-                    title = 'Transpose A =';
-                    break;
-                case 'transposeB':
-                    result = transposeMatrix(matrixB);
-                    title = 'Transpose B =';
-                    break;
-                case 'determinantA':
-                    const detA = determinant(matrixA);
-                    resultDiv.innerHTML = `<div class="success"><h3>Determinan A = ${detA.toFixed(6)}</h3><p>Matriks ${matrixA.length}×${matrixA[0].length}</p></div>`;
-                    return;
-                case 'determinantB':
-                    const detB = determinant(matrixB);
-                    resultDiv.innerHTML = `<div class="success"><h3>Determinan B = ${detB.toFixed(6)}</h3><p>Matriks ${matrixB
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            const input = document.getElementById(`${matrixName}_${i}_${j}`);
+            input.value = Math.floor(Math.random() * 20) - 10; // -10 to 9
+        }
+    }
+}
+
+function clearMatrix(matrixName) {
+    const rows = parseInt(document.getElementById(`rows${matrixName}`).value);
+    const cols = parseInt(document.getElementById(`cols${matrixName}`).value);
+    
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            const input = document.getElementById(`${matrixName}_${i}_${j}`);
+            input.value = '0';
+        }
+    }
+}
+
+function clearResult() {
+    document.getElementById('result').innerHTML = 'Pilih operasi untuk melihat hasil...';
+}
+
+// Initialize application
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize matrices
+    createMatrix('A');
+    createMatrix('B');
+    
+    // Set initial theme
+    document.documentElement.setAttribute('data-theme', theme);
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(event) {
+    // Ctrl/Cmd + T for theme toggle
+    if ((event.ctrlKey || event.metaKey) && event.key === 't') {
+        event.preventDefault();
+        toggleTheme();
+    }
+    
+    // Ctrl/Cmd + R for random fill (focus on matrix A)
+    if ((event.ctrlKey || event.metaKey) && event.key === 'r') {
+        event.preventDefault();
+        fillRandom('A');
+        fillRandom('B');
+    }
+    
+    // Escape to clear result
+    if (event.key === 'Escape') {
+        clearResult();
+    }
+});
+
+// Input validation
+document.addEventListener('input', function(event) {
+    if (event.target.classList.contains('matrix-cell')) {
+        const value = parseFloat(event.target.value);
+        if (isNaN(value)) {
+            event.target.style.borderColor = '#e53e3e';
+        } else {
+            event.target.style.borderColor = 'transparent';
+        }
+    }
+});
